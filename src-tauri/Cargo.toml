@@ -1,0 +1,40 @@
+[package]
+name = "yl-marketing-control-center"
+version = "1.0.0"
+description = "Y&L Marketing Control Center"
+authors = ["you"]
+edition = "2021"
+
+[lib]
+name = "control_center_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api", "devtools"] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-process = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1.49.0", features = ["full"] }
+sqlx = { version = "0.8.6", features = ["runtime-tokio", "sqlite"] }
+anyhow = "1.0.100"
+directories = "6.0.0"
+chrono = "0.4"
+tokio-tungstenite = "0.24"
+futures-util = "0.3"
+
+[features]
+default = ["devtools"]
+devtools = ["tauri/devtools"]
+
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 16
+panic = "abort"
+strip = true
