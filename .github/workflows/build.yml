@@ -31,6 +31,23 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Create dummy icons
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path src-tauri/icons
+          
+          # Create a simple 32x32 PNG (red square)
+          $bytes = [System.Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABNSURBVFiF7dYxDQAgEMCwA/+/M3YgJKRJdXV3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dwHvGQYBXKKpVQAAAABJRU5ErkJggg==")
+          [System.IO.File]::WriteAllBytes("src-tauri/icons/32x32.png", $bytes)
+          [System.IO.File]::WriteAllBytes("src-tauri/icons/128x128.png", $bytes)
+          [System.IO.File]::WriteAllBytes("src-tauri/icons/128x128@2x.png", $bytes)
+          
+          # Create ICO file (Windows)
+          Copy-Item "src-tauri/icons/32x32.png" "src-tauri/icons/icon.ico"
+          
+          # Create ICNS file (macOS) - just copy PNG
+          Copy-Item "src-tauri/icons/32x32.png" "src-tauri/icons/icon.icns"
+
       - name: Build Tauri app
         run: npm run tauri build
 
