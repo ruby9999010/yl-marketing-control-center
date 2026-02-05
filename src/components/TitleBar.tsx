@@ -1,4 +1,3 @@
-import { X, Minus, Square } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 export function TitleBar() {

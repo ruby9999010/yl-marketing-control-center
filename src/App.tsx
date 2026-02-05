@@ -12,7 +12,7 @@ import './App.css';
 function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [serverStarted, setServerStarted] = useState(false);
-  const [serverPort, setServerPort] = useState(9999);
+  const [serverPort] = useState(9999); // setServerPort 제거
   const [error, setError] = useState<string | null>(null);
 
   const [clients, setClients] = useState<Client[]>([]);
