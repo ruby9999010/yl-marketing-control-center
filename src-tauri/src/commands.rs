@@ -1,6 +1,5 @@
 use crate::db::{Client, ClientMemo, ClientStatus, Db, LogEntry};
 use crate::types::AppState;
-use crate::websocket_server::WebSocketServer;
 use anyhow::Result;
 use tauri::State;
 
@@ -8,7 +7,7 @@ use tauri::State;
 #[tauri::command]
 pub async fn init_db(app_state: State<'_, AppState>) -> Result<(), String> {
     let db = Db::new().await.map_err(|e| e.to_string())?;
-    *app_state.db.lock().await = Some(db);
+    *app_state.db.write().await = Some(db);
     Ok(())
 }
 
@@ -31,7 +30,7 @@ pub async fn start_websocket_server(
 // 클라이언트 목록 조회
 #[tauri::command]
 pub async fn list_clients(app_state: State<'_, AppState>) -> Result<Vec<Client>, String> {
-    let db = app_state.db.lock().await;
+    let db = app_state.db.read().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
     
     db.list_clients().await.map_err(|e| e.to_string())
@@ -55,7 +54,7 @@ pub async fn get_client_status(
     app_state: State<'_, AppState>,
     client_id: String,
 ) -> Result<Option<ClientStatus>, String> {
-    let db = app_state.db.lock().await;
+    let db = app_state.db.read().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
     
     db.get_status(&client_id).await.map_err(|e| e.to_string())
@@ -64,7 +63,7 @@ pub async fn get_client_status(
 // 모든 클라이언트 상태 조회
 #[tauri::command]
 pub async fn list_client_statuses(app_state: State<'_, AppState>) -> Result<Vec<ClientStatus>, String> {
-    let db = app_state.db.lock().await;
+    let db = app_state.db.read().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
     
     db.list_statuses().await.map_err(|e| e.to_string())
@@ -77,7 +76,7 @@ pub async fn save_client_memo(
     client_id: String,
     memo: String,
 ) -> Result<(), String> {
-    let db = app_state.db.lock().await;
+    let db = app_state.db.read().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
     
     db.save_memo(&client_id, &memo).await.map_err(|e| e.to_string())
@@ -89,7 +88,7 @@ pub async fn get_client_memo(
     app_state: State<'_, AppState>,
     client_id: String,
 ) -> Result<Option<ClientMemo>, String> {
-    let db = app_state.db.lock().await;
+    let db = app_state.db.read().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
     
     db.get_memo(&client_id).await.map_err(|e| e.to_string())
@@ -102,7 +101,7 @@ pub async fn get_logs(
     client_id: Option<String>,
     limit: i64,
 ) -> Result<Vec<LogEntry>, String> {
-    let db = app_state.db.lock().await;
+    let db = app_state.db.read().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
     
     db.get_logs(client_id.as_deref(), limit).await.map_err(|e| e.to_string())
@@ -114,7 +113,7 @@ pub async fn clear_old_logs(
     app_state: State<'_, AppState>,
     days: i64,
 ) -> Result<u64, String> {
-    let db = app_state.db.lock().await;
+    let db = app_state.db.read().await;
     let db = db.as_ref().ok_or("Database not initialized")?;
     
     db.clear_old_logs(days).await.map_err(|e| e.to_string())
@@ -139,7 +138,7 @@ pub async fn send_client_command(
 // 서버 설정 저장
 #[tauri::command]
 pub async fn save_server_settings(
-    app_state: State<'_, AppState>,
+    _app_state: State<'_, AppState>,
     port: u16,
 ) -> Result<(), String> {
     // 설정을 파일이나 DB에 저장 (향후 구현)
@@ -150,7 +149,7 @@ pub async fn save_server_settings(
 // 서버 설정 조회
 #[tauri::command]
 pub async fn get_server_settings(
-    app_state: State<'_, AppState>,
+    _app_state: State<'_, AppState>,
 ) -> Result<serde_json::Value, String> {
     Ok(serde_json::json!({
         "port": 9999

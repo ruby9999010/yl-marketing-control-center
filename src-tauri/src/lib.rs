@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use tauri::{Manager, WindowEvent, Emitter};
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::RwLock;
 
 mod db;
 mod websocket_server;
@@ -27,7 +27,7 @@ pub fn run() {
 
             // WebSocket 서버 초기화
             let app_handle = app.handle().clone();
-            let db = Arc::new(Mutex::new(None));
+            let db = Arc::new(RwLock::new(None));
             let ws_server = WebSocketServer::new(app_handle, db.clone());
 
             let app_state = AppState {
