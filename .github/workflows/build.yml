@@ -31,22 +31,34 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Create dummy icons
+      - name: Install ImageMagick
+        run: choco install imagemagick -y
+
+      - name: Create app icons
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path src-tauri/icons
           
-          # Create a simple 32x32 PNG (red square)
-          $bytes = [System.Convert]::FromBase64String("iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAA7AAAAOwBeShxvQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABNSURBVFiF7dYxDQAgEMCwA/+/M3YgJKRJdXV3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dwHvGQYBXKKpVQAAAABJRU5ErkJggg==")
-          [System.IO.File]::WriteAllBytes("src-tauri/icons/32x32.png", $bytes)
-          [System.IO.File]::WriteAllBytes("src-tauri/icons/128x128.png", $bytes)
-          [System.IO.File]::WriteAllBytes("src-tauri/icons/128x128@2x.png", $bytes)
+          # Create a simple SVG icon
+          $svg = @"
+          <svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+            <rect width="256" height="256" fill="#0A84FF"/>
+            <text x="128" y="140" font-family="Arial" font-size="120" fill="white" text-anchor="middle" font-weight="bold">YL</text>
+          </svg>
+          "@
+          $svg | Out-File -FilePath "src-tauri/icons/icon.svg" -Encoding UTF8
+          
+          # Convert SVG to PNG using ImageMagick
+          magick convert -background none -size 32x32 src-tauri/icons/icon.svg src-tauri/icons/32x32.png
+          magick convert -background none -size 128x128 src-tauri/icons/icon.svg src-tauri/icons/128x128.png
+          magick convert -background none -size 256x256 src-tauri/icons/icon.svg src-tauri/icons/128x128@2x.png
+          magick convert -background none -size 256x256 src-tauri/icons/icon.svg src-tauri/icons/icon.png
           
           # Create ICO file (Windows)
-          Copy-Item "src-tauri/icons/32x32.png" "src-tauri/icons/icon.ico"
+          magick convert src-tauri/icons/icon.png -define icon:auto-resize=256,128,64,48,32,16 src-tauri/icons/icon.ico
           
-          # Create ICNS file (macOS) - just copy PNG
-          Copy-Item "src-tauri/icons/32x32.png" "src-tauri/icons/icon.icns"
+          # Create ICNS file (macOS) - just use PNG for now
+          Copy-Item "src-tauri/icons/icon.png" "src-tauri/icons/icon.icns"
 
       - name: Build Tauri app
         run: npm run tauri build
